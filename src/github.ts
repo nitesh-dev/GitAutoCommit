@@ -61,8 +61,10 @@ export async function updateReadme(
     });
 
     console.log("README file updated successfully.");
-  } catch (error) {
+    return "Successfully commit sended due to 0 commit"
+  } catch (error: any) {
     console.error("An error occurred:", error);
+    return "Unable to send the commit :-> " + error.message
   }
 }
 
@@ -90,6 +92,7 @@ export async function getTodayCommitCount(
     const octokit = new Octokit({
       auth: githubToken,
     });
+
 
     // Get the list of commits
     const response = await octokit.repos.listCommits({
@@ -122,6 +125,13 @@ export async function start(
   owners: string[],
   repo: string[]
 ) {
+
+  const reports = Array<{
+    owner: string,
+    repo: string,
+    message: string
+  }>()
+
   // getting quotes
   const quote = await getQuotes();
 
@@ -133,9 +143,21 @@ export async function start(
       repo[index]
     );
 
+    const report = {
+      owner: owners[index],
+      repo: repo[index],
+      message: ""
+    }
+
     // update readme if commit count is zero
     if (count == 0) {
-      await updateReadme(tokens[index], owners[index], repo[index], quote);
+      report.message = await updateReadme(tokens[index], owners[index], repo[index], quote);
+    }else if(count > 0){
+      report.message = "You have already committed today."
+    }else{
+      report.message = "Something went wrong with your repo! or your repo not found"
     }
+
+    reports.push(report)
   }
 }

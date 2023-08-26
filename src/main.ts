@@ -17,7 +17,7 @@ app.get("/", async (req, res) => {
 });
 
 app.post("/commit", async (req, res) => {
-  start(githubToken, owners, repo)
+  await start(githubToken, owners, repo)
   res.send('sending commit')
 });
 
