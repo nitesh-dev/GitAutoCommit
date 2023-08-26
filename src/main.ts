@@ -2,8 +2,6 @@ import express from "express";
 import env from 'dotenv'
 env.config()
 
-console.log(process.env.TEST)
-
 const app = express();
 const port = 3000;
 
