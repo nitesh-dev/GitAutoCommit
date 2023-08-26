@@ -6,7 +6,8 @@
   "scripts": {
     "build": "tsc -b",
     "start": "tsc -w",
-    "dev": "nodemon out/main.js"
+    "start:dev": "nodemon out/main.js",
+    "deploy": "node out/main.js"
   },
   "type": "module",
   "keywords": [],
