@@ -157,7 +157,7 @@ export async function start(
       report.message = "You have already committed today.";
     } else {
       report.message =
-        "Something went wrong with your repo! or your repo not found";
+        "Something went wrong with your repo! or your repo not found or bad credentials (github-token)";
     }
 
     reports.push(report);
