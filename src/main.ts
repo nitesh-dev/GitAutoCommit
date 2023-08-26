@@ -1,11 +1,13 @@
 import express from "express";
 import env from "dotenv";
-env.config();
 import {
-  getRepositoryDetails,
-  getTodayCommitCount,
-  updateReadme,
+  start
 } from "./github.js";
+env.config();
+
+const owners = (process.env.OWNER || "octocat").replace(/\s+/g,' ').trim().split(" ");
+const repo = (process.env.REPO || "Spoon-Knife").replace(/\s+/g,' ').trim().split(" ");
+const githubToken = (process.env.GITHUB_TOKEN || "").replace(/\s+/g,' ').trim().split(" ");
 
 const app = express();
 const port = 3000;
@@ -15,16 +17,8 @@ app.get("/", async (req, res) => {
 });
 
 app.post("/commit", async (req, res) => {
-  const count = await getTodayCommitCount();
-  if (count == 0) {
-    await updateReadme();
-    return res.send("done");
-    
-  } else if (count > 0) {
-    res.send("Commit already exist");
-  } else {
-    res.send("unable to commit");
-  }
+  start(githubToken, owners, repo)
+  res.send('sending commit')
 });
 
 app.listen(port, () => {
