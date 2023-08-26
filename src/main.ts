@@ -16,9 +16,9 @@ app.get("/", async (req, res) => {
   res.send("Server is working");
 });
 
-app.post("/commit", async (req, res) => {
-  await start(githubToken, owners, repo)
-  res.send('sending commit')
+app.get("/commit", async (req, res) => {
+  const response = await start(githubToken, owners, repo)
+  res.json(response)
 });
 
 app.listen(port, () => {

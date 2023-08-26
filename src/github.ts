@@ -61,10 +61,10 @@ export async function updateReadme(
     });
 
     console.log("README file updated successfully.");
-    return "Successfully commit sended due to 0 commit"
+    return "Successfully commit sended due to 0 commit";
   } catch (error: any) {
     console.error("An error occurred:", error);
-    return "Unable to send the commit :-> " + error.message
+    return "Unable to send the commit :-> " + error.message;
   }
 }
 
@@ -82,34 +82,35 @@ async function getQuotes() {
   return "No quotes exist";
 }
 
-export async function getTodayCommitCount(
-  githubToken: string,
-  owner: string,
-  repo: string
-) {
+export async function getTodayCommitCount(githubToken: string, owner: string) {
   try {
     // creating new connection
     const octokit = new Octokit({
       auth: githubToken,
     });
 
-
     // Get the list of commits
-    const response = await octokit.repos.listCommits({
-      owner: owner,
-      repo: repo,
-      sha: branch,
+    const response = await octokit.activity.listPublicEventsForUser({
+      username: owner,
+    });
+
+    // filter the latest commit
+    const latestCommits = response.data.filter((value) => {
+      if (value.type == "PushEvent") {
+        return value;
+      }
     });
 
     // Count commits made today
     const today = new Date().toISOString().split("T")[0];
-    const todayCommits = response.data.map((value) => {
-      if (value) {
-        if (value.commit.author && value.commit.author.date) {
-          if (value.commit.author.date.split("T")[0] == today) {
-            return value;
-          }
-        }
+
+    const todayCommits = latestCommits.filter((value) => {
+      if (
+        value &&
+        value.created_at &&
+        value.created_at.split("T")[0] == today
+      ) {
+        return value;
       }
     });
 
@@ -125,39 +126,42 @@ export async function start(
   owners: string[],
   repo: string[]
 ) {
-
   const reports = Array<{
-    owner: string,
-    repo: string,
-    message: string
-  }>()
+    owner: string;
+    repo: string;
+    message: string;
+  }>();
 
   // getting quotes
   const quote = await getQuotes();
 
   for (let index = 0; index < tokens.length; index++) {
     // sending request
-    const count = await getTodayCommitCount(
-      tokens[index],
-      owners[index],
-      repo[index]
-    );
+    const count = await getTodayCommitCount(tokens[index], owners[index]);
 
     const report = {
       owner: owners[index],
       repo: repo[index],
-      message: ""
-    }
+      message: "",
+    };
 
     // update readme if commit count is zero
     if (count == 0) {
-      report.message = await updateReadme(tokens[index], owners[index], repo[index], quote);
-    }else if(count > 0){
-      report.message = "You have already committed today."
-    }else{
-      report.message = "Something went wrong with your repo! or your repo not found"
+      report.message = await updateReadme(
+        tokens[index],
+        owners[index],
+        repo[index],
+        quote
+      );
+    } else if (count > 0) {
+      report.message = "You have already committed today.";
+    } else {
+      report.message =
+        "Something went wrong with your repo! or your repo not found";
     }
 
-    reports.push(report)
+    reports.push(report);
   }
+
+  return { response: reports };
 }
